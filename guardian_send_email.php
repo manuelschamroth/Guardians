@@ -13,7 +13,7 @@
 
 https://guardian1.cloudcoin.global/service/lost/guardian_send_email.php?
 
-password=47712cfb590e4b1fa8e2f1479f287418&raida=17&sns[]=2&ans[]=e4108c63f8625150f28232b31925219e&email=sean@worthington.net
+password=47712cfb590e4b1fa8e2f479f287418&raida=17&sns[]=2&ans[]=e4108c63f8625150f28232b31925219e&email=sean@worthington.net
 
 PARAMETERS:
 password: the password of the RAIDA Guardian
