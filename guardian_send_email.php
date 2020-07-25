@@ -9,9 +9,13 @@
  *
  * @param array $_GET -> nn, sn, ans[], sns[], password;
  *
- * @example https://guardian1.cloudcoin.global/service/lost/guardian_send_email?password=989jijere&raida=17&email=cloudcoin@protonmail.com&sns[]=145895&sns[]=66585&sns[]=16589554&ans[]=8ae06de0f9ce4917b3309df71570f92c&ans[]=8ae06de0f9ce4917b3309df71570f92c&ans[]=8ae06de0f9ce4917b3309df71570f92c
- 
- PARAMETERS:
+ * @example 
+
+https://guardian1.cloudcoin.global/service/lost/guardian_send_email.php?
+
+password=47712cfb590e4b1fa8e2f1479f287418&raida=17&sns[]=2&ans[]=e4108c63f8625150f28232b31925219e&email=sean@worthington.net
+
+PARAMETERS:
 password: the password of the RAIDA Guardian
 ans[]: Payment coin Authenticity Number that is a guid without hypends. Lowercase prefered.
 sns[] Array of lost coins.
@@ -65,7 +69,7 @@ $date = date("Y-m-d H:i:s");
 $max_coins = 400;
 
 $count = 0;
-$fromGuardian =GUARDIAN_NAME;
+$fromGuardian = GUARDIAN_NAME;
 $password = PASSWORD;
 
 validate_GET_Parameters();
@@ -119,10 +123,34 @@ function validate_GET_Parameters(){
 		$err = array();
 		
 		if (empty( $_GET['sns'])) $err[] = "<br>The sn (serial number) of your coins required but was missing.";         
-		if (empty( $_GET['ans'])) $err[] = "<br>The an (authenticity number) of the payment coin is required but missing."
-		if (empty( $_GET['password'])) $err[] = "<br>A password was required but was missing.";  
-		if (empty( $_GET['email'])) $err[] = "<br>The email required but was missing.";     
+		if (empty( $_GET['ans'])) $err[] = "<br>The an (authenticity number) coins are required but missing.";
+		if (empty( $_GET['password'])) $err[] = "<br>A password was required but was missing.";     
 		if (empty( $_GET['raida'])) $err[] = "<br>The raida was required but was missing.";  		
+		if (empty($_GET["email"])) {
+			$err[] = "<br>The email required but was missing.";  
+		} else {
+			$email = test_input($_GET["email"]);
+			// check if e-mail address is well-formed
+			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			$err[] = "<br>Invalid email format";
+			}
+		}
+		if (!is_numeric($_GET["raida"])) $err[] = "<br>The raida should be a number between 0 and 24.";   ;
+		if( $count > $max_coins  ) $err[] = "<br>Ony $max_coins coins may be attached.";
+		if( $password != $_GET['password']) $err[] = "<br>Wrong Password";
+		
+		if ($err) 
+		{
+			$status = "missing parameters";
+			$message = "";
+			
+			foreach($err as $line)
+			{ 
+				$message .= $line	;				
+			}//end for each error
+			die(response($status, $message));
+		}
+		
 		$count = count( $_GET['sns'] );
 		$_GET["email"] =  htmlspecialchars($_GET["email"]);
 		$_GET["raida"] =  intval($_GET["raida"]);
@@ -140,6 +168,7 @@ function validate_GET_Parameters(){
 			}//end for each error
 			die(response($status, $message));
 		}
+		
 		
 		
 		for($i = 0; $i < $count ; $i++)
@@ -163,7 +192,7 @@ function validate_GET_Parameters(){
 	
  }// end validate 
  
-function isValidSN(string $sn): bool { global $max_sn; if( is_numeric($sn) && intval($sn)>=1 && intval($sn) <= $max_sn && !in_array($sn,['127','1270','12700','127000','1270000','12700000','1372730'],true)){ return true;}else{return false;}}
+function isValidSN(string $sn): bool { global $max_sn; if( is_numeric($sn) && intval($sn)>=1 && intval($sn) <= 16777216 && !in_array($sn,['127','1270','12700','127000','1270000','12700000','1372730'],true)){ return true;}else{return false;}}
 
 function isValidHexStr(string $hexStr, int $length): bool{
 	if( strlen($hexStr) === $length && ctype_xdigit($hexStr))
@@ -183,14 +212,19 @@ function response(string $status, $message){
 				'server' => "guardian".$this_node_number,
                 'status' => $status,
                 'message' => $message,
-                'version' => $version,
+                'version' => VERSION,
                 'time' => $date,
 				'ex_time' => $exec_time
             ]);
 			die($json_reponse );
 }
 
-
+function test_input($data) {
+  $data = trim($data);
+  $data = stripslashes($data);
+  $data = htmlspecialchars($data);
+  return $data;
+}
 
 function help(){
 	
